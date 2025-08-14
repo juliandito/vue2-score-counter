@@ -2,11 +2,7 @@
   <b-container fluid class="bg-light vh-100">
     <b-row class="justify-content-center align-items-center text-center h-100">
       <b-col md="5">
-        <b-card
-          no-body
-          class="shadow"
-          header-tag="header"
-        >
+        <b-card no-body class="shadow" header-tag="header">
           <template #header>
             <h1 class="font-weight-bold text-muted my-2">
               {{ team1Player }}
@@ -75,7 +71,7 @@
         </b-row>
         <b-row class="mt-2">
           <b-col>
-            <hr>
+            <hr />
           </b-col>
         </b-row>
         <b-row>
@@ -85,7 +81,7 @@
         </b-row>
         <b-row class="mb-1">
           <b-col>
-            <hr>
+            <hr />
           </b-col>
         </b-row>
         <b-row>
@@ -128,7 +124,7 @@
 
         <b-row class="mt-1">
           <b-col>
-            <hr>
+            <hr />
           </b-col>
         </b-row>
 
@@ -146,11 +142,7 @@
       </b-col>
 
       <b-col md="5">
-        <b-card
-          no-body
-          class="shadow"
-          header-tag="header"
-        >
+        <b-card no-body class="shadow" header-tag="header">
           <template #header>
             <h1 class="font-weight-bold text-muted my-2">
               {{ team2Player }}
@@ -217,7 +209,11 @@
           <label for="input-small">Team 1:</label>
         </b-col>
         <b-col sm="10">
-          <b-form-input id="input-team-1" placeholder="Player Name" v-model="team1Player"></b-form-input>
+          <b-form-input
+            id="input-team-1"
+            placeholder="Player Name"
+            v-model="team1Player"
+          ></b-form-input>
         </b-col>
       </b-row>
       <b-row class="mt-4">
@@ -225,7 +221,11 @@
           <label for="input-small">Team 2:</label>
         </b-col>
         <b-col sm="10">
-          <b-form-input id="input-team-2" placeholder="Player Name" v-model="team2Player"></b-form-input>
+          <b-form-input
+            id="input-team-2"
+            placeholder="Player Name"
+            v-model="team2Player"
+          ></b-form-input>
         </b-col>
       </b-row>
 
@@ -233,7 +233,6 @@
         <b-button variant="secondary" @click="hideSettingModal">Close</b-button>
       </template>
     </b-modal>
-
   </b-container>
 </template>
 
@@ -257,7 +256,7 @@ export default {
     BIconStopFill,
     BIconArrowCounterclockwise,
     BIconGearFill,
-    BIconFlagFill
+    BIconFlagFill,
   },
   data() {
     return {
@@ -267,8 +266,8 @@ export default {
       timeElapsed: 0,
       timerRunning: false,
       modalSettingShow: false,
-      team1Player: 'Player 1 & Player 2',
-      team2Player: 'Player 3 & Player 4',
+      team1Player: "Player 1 & Player 2",
+      team2Player: "Player 3 & Player 4",
     };
   },
   computed: {
@@ -334,12 +333,12 @@ export default {
       this.team1Score = 0;
       this.team2Score = 0;
     },
-    showSettingModal () {
-      this.modalSettingShow = true
+    showSettingModal() {
+      this.modalSettingShow = true;
     },
-    hideSettingModal () {
-      this.modalSettingShow = false
-    }
+    hideSettingModal() {
+      this.modalSettingShow = false;
+    },
   },
   // Clean up the interval when the component is destroyed
   beforeDestroy() {
