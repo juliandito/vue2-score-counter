@@ -35,19 +35,33 @@
         </b-card>
       </b-col>
 
-      <b-col md="2" class="d-flex flex-column align-items-center">
-        <div class="timer-display mb-3">{{ formattedTime }}</div>
-        <b-button-group vertical class="w-75 shadow-sm">
-          <b-button @click="startTimer" :disabled="timerRunning" variant="outline-primary" class="font-weight-bold">
-            <b-icon-play-fill></b-icon-play-fill> Start
-          </b-button>
-          <b-button @click="stopTimer" :disabled="!timerRunning" variant="outline-warning" class="font-weight-bold">
-            <b-icon-stop-fill></b-icon-stop-fill> Stop
-          </b-button>
-          <b-button @click="resetAll" variant="outline-danger" class="font-weight-bold">
-            <b-icon-arrow-counterclockwise></b-icon-arrow-counterclockwise> Reset
-          </b-button>
-        </b-button-group>
+      <b-col md="2">
+        <b-row>
+          <b-col>
+            <div class="timer-display mb-3">{{ formattedTime }}</div>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col>
+            <b-button @click="startTimer" :disabled="timerRunning" variant="primary" block class="font-weight-bold w-100">
+              <b-icon-play-fill></b-icon-play-fill> Start
+            </b-button>
+          </b-col>
+        </b-row>
+        <b-row class="mt-2">
+          <b-col>
+            <b-button @click="stopTimer" :disabled="!timerRunning" variant="warning" block class="font-weight-bold w-100">
+              <b-icon-stop-fill></b-icon-stop-fill> Stop
+            </b-button>
+          </b-col>
+        </b-row>
+        <b-row class="mt-2">
+          <b-col>
+            <b-button @click="resetAll" variant="danger" block class="font-weight-bold w-100">
+              <b-icon-arrow-counterclockwise></b-icon-arrow-counterclockwise> Reset
+            </b-button>
+          </b-col>
+        </b-row>
       </b-col>
 
       <b-col md="5">
@@ -108,12 +122,10 @@ export default {
   },
   data() {
     return {
-      // Scores for each team
       team1Score: 0,
       team2Score: 0,
-      // Timer-related data
       timer: null,
-      timeElapsed: 0, // in seconds
+      timeElapsed: 0,
       timerRunning: false,
     };
   },
@@ -187,7 +199,6 @@ export default {
 </script>
 
 <style scoped>
-/* Scoped styles for the component to avoid affecting other parts of the app */
 .score-display-container {
   display: flex;
   justify-content: center;
