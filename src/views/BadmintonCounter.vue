@@ -2,15 +2,18 @@
   <b-container fluid class="bg-light vh-100">
     <b-row class="justify-content-center align-items-center text-center h-100">
       <b-col md="5">
-        <b-card no-body class="border-0 shadow-sm">
+        <b-card
+          no-body
+          class="shadow"
+          header-tag="header"
+        >
+          <template #header>
+            <h1 class="font-weight-bold text-muted my-2">
+              {{ team1Player }}
+            </h1>
+          </template>
+
           <b-card-body>
-            <b-row>
-              <b-col>
-                <h2 class="mb-4 font-weight-bold text-muted">
-                  Player 1 & Player 2
-                </h2>
-              </b-col>
-            </b-row>
             <b-row>
               <b-col>
                 <b-button
@@ -37,7 +40,7 @@
                 </div>
               </b-col>
             </b-row>
-            <b-row>
+            <b-row class="mt-3">
               <b-col>
                 <b-button
                   @click="decrementScore('team1')"
@@ -60,30 +63,50 @@
       <b-col md="2">
         <b-row>
           <b-col>
-            <div class="timer-display mb-3">{{ formattedTime }}</div>
-          </b-col>
-        </b-row>
-        <b-row>
-          <b-col>
             <b-button
-              @click="startTimer"
-              :disabled="timerRunning"
-              variant="primary"
+              @click="showSettingModal"
+              variant="secondary"
               block
-              class="font-weight-bold w-100"
+              class="font-weight-bold w-100 shadow-sm"
             >
-              <b-icon-play-fill></b-icon-play-fill> Start
+              <b-icon-gear-fill></b-icon-gear-fill> Setup Players
             </b-button>
           </b-col>
         </b-row>
         <b-row class="mt-2">
           <b-col>
+            <hr>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col>
+            <div class="timer-display">{{ formattedTime }}</div>
+          </b-col>
+        </b-row>
+        <b-row class="mb-1">
+          <b-col>
+            <hr>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col class="pe-1">
+            <b-button
+              @click="startTimer"
+              :disabled="timerRunning"
+              variant="primary"
+              block
+              class="font-weight-bold w-100 shadow-sm"
+            >
+              <b-icon-play-fill></b-icon-play-fill> Start
+            </b-button>
+          </b-col>
+          <b-col class="ps-1">
             <b-button
               @click="stopTimer"
               :disabled="!timerRunning"
               variant="warning"
               block
-              class="font-weight-bold w-100"
+              class="font-weight-bold w-100 shadow-sm"
             >
               <b-icon-stop-fill></b-icon-stop-fill> Stop
             </b-button>
@@ -95,25 +118,45 @@
               @click="resetAll"
               variant="danger"
               block
-              class="font-weight-bold w-100"
+              class="font-weight-bold w-100 shadow-sm"
             >
               <b-icon-arrow-counterclockwise></b-icon-arrow-counterclockwise>
               Reset
             </b-button>
           </b-col>
         </b-row>
+
+        <b-row class="mt-1">
+          <b-col>
+            <hr>
+          </b-col>
+        </b-row>
+
+        <b-row class="mt-4">
+          <b-col>
+            <b-button
+              variant="info"
+              block
+              class="font-weight-bold w-100 shadow-sm"
+            >
+              <b-icon-flag-fill></b-icon-flag-fill> Finish
+            </b-button>
+          </b-col>
+        </b-row>
       </b-col>
 
       <b-col md="5">
-        <b-card no-body class="border-0 shadow-sm">
+        <b-card
+          no-body
+          class="shadow"
+          header-tag="header"
+        >
+          <template #header>
+            <h1 class="font-weight-bold text-muted my-2">
+              {{ team2Player }}
+            </h1>
+          </template>
           <b-card-body>
-            <b-row>
-              <b-col>
-                <h2 class="mb-4 font-weight-bold text-muted">
-                  Player 3 & Player 4
-                </h2>
-              </b-col>
-            </b-row>
             <b-row>
               <b-col>
                 <b-button
@@ -140,7 +183,7 @@
                 </div>
               </b-col>
             </b-row>
-            <b-row>
+            <b-row class="mt-3">
               <b-col>
                 <b-button
                   @click="decrementScore('team2')"
@@ -160,6 +203,37 @@
         </b-card>
       </b-col>
     </b-row>
+
+    <b-modal
+      id="settingModal"
+      title="Match Players"
+      v-model="modalSettingShow"
+      no-close-on-backdrop
+      no-close-on-esc
+      hide-header-close
+    >
+      <b-row>
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Team 1:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input id="input-team-1" placeholder="Player Name" v-model="team1Player"></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Team 2:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input id="input-team-2" placeholder="Player Name" v-model="team2Player"></b-form-input>
+        </b-col>
+      </b-row>
+
+      <template #modal-footer>
+        <b-button variant="secondary" @click="hideSettingModal">Close</b-button>
+      </template>
+    </b-modal>
+
   </b-container>
 </template>
 
@@ -170,6 +244,8 @@ import {
   BIconPlayFill,
   BIconStopFill,
   BIconArrowCounterclockwise,
+  BIconGearFill,
+  BIconFlagFill,
 } from "bootstrap-vue";
 
 export default {
@@ -180,6 +256,8 @@ export default {
     BIconPlayFill,
     BIconStopFill,
     BIconArrowCounterclockwise,
+    BIconGearFill,
+    BIconFlagFill
   },
   data() {
     return {
@@ -188,6 +266,9 @@ export default {
       timer: null,
       timeElapsed: 0,
       timerRunning: false,
+      modalSettingShow: false,
+      team1Player: 'Player 1 & Player 2',
+      team2Player: 'Player 3 & Player 4',
     };
   },
   computed: {
@@ -253,6 +334,12 @@ export default {
       this.team1Score = 0;
       this.team2Score = 0;
     },
+    showSettingModal () {
+      this.modalSettingShow = true
+    },
+    hideSettingModal () {
+      this.modalSettingShow = false
+    }
   },
   // Clean up the interval when the component is destroyed
   beforeDestroy() {
