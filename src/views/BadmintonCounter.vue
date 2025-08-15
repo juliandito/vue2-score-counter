@@ -17,7 +17,7 @@
                   variant="success"
                   size="lg"
                   block
-                  class="mb-3 font-weight-bold w-100 d-flex justify-content-center align-items-center p-4"
+                  class="font-weight-bold w-100 d-flex justify-content-center align-items-center py-3"
                 >
                   <b-icon-plus-circle-fill
                     class="mx-2"
@@ -36,14 +36,14 @@
                 </div>
               </b-col>
             </b-row>
-            <b-row class="mt-3">
+            <b-row>
               <b-col>
                 <b-button
                   @click="decrementScore('team1')"
                   variant="danger"
                   size="lg"
                   block
-                  class="mb-3 font-weight-bold w-100 d-flex justify-content-center align-items-center p-4"
+                  class="mb-3 font-weight-bold w-100 d-flex justify-content-center align-items-center py-3"
                 >
                   <b-icon-dash-circle-fill
                     class="mx-2"
@@ -60,12 +60,26 @@
         <b-row>
           <b-col>
             <b-button
+              variant="light"
+              block
+              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
+              :to="{ name: 'Match List'}"
+            >
+              <b-icon-list-check></b-icon-list-check>
+              <span class="ps-2">Match Results</span>
+            </b-button>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col>
+            <b-button
               @click="showSettingModal"
               variant="secondary"
               block
-              class="font-weight-bold w-100 shadow-sm"
+              class="font-weight-bold w-100 shadow-sm mt-3 d-flex flex-row justify-content-center align-items-center"
             >
-              <b-icon-gear-fill></b-icon-gear-fill> Setup Players
+              <b-icon-gear-fill></b-icon-gear-fill>
+              <span class="ps-2">Setup Players</span>
             </b-button>
           </b-col>
         </b-row>
@@ -91,9 +105,10 @@
               :disabled="timerRunning"
               variant="primary"
               block
-              class="font-weight-bold w-100 shadow-sm"
+              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
             >
-              <b-icon-play-fill></b-icon-play-fill> Start
+              <b-icon-play-fill></b-icon-play-fill>
+              <span class="ps-2">Start</span>
             </b-button>
           </b-col>
           <b-col class="ps-1">
@@ -102,9 +117,10 @@
               :disabled="!timerRunning"
               variant="warning"
               block
-              class="font-weight-bold w-100 shadow-sm"
+              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
             >
-              <b-icon-stop-fill></b-icon-stop-fill> Stop
+              <b-icon-pause-fill></b-icon-pause-fill>
+              <span class="ps-2">Pause</span>
             </b-button>
           </b-col>
         </b-row>
@@ -114,10 +130,10 @@
               @click="resetAll"
               variant="danger"
               block
-              class="font-weight-bold w-100 shadow-sm"
+              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
             >
               <b-icon-arrow-counterclockwise></b-icon-arrow-counterclockwise>
-              Reset
+              <span class="ps-2">Reset</span>
             </b-button>
           </b-col>
         </b-row>
@@ -133,9 +149,10 @@
             <b-button
               variant="info"
               block
-              class="font-weight-bold w-100 shadow-sm"
+              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
             >
-              <b-icon-flag-fill></b-icon-flag-fill> Finish
+              <b-icon-flag-fill></b-icon-flag-fill>
+              <span class="ps-2">Finish</span>
             </b-button>
           </b-col>
         </b-row>
@@ -156,7 +173,7 @@
                   variant="success"
                   size="lg"
                   block
-                  class="mb-3 font-weight-bold w-100 d-flex justify-content-center align-items-center p-4"
+                  class="font-weight-bold w-100 d-flex justify-content-center align-items-center py-3"
                 >
                   <b-icon-plus-circle-fill
                     class="mx-2"
@@ -175,14 +192,14 @@
                 </div>
               </b-col>
             </b-row>
-            <b-row class="mt-3">
+            <b-row>
               <b-col>
                 <b-button
                   @click="decrementScore('team2')"
                   variant="danger"
                   size="lg"
                   block
-                  class="mb-3 font-weight-bold w-100 d-flex justify-content-center align-items-center p-4"
+                  class="mb-3 font-weight-bold w-100 d-flex justify-content-center align-items-center py-3"
                 >
                   <b-icon-dash-circle-fill
                     class="mx-2"
@@ -237,27 +254,9 @@
 </template>
 
 <script>
-import {
-  BIconPlusCircleFill,
-  BIconDashCircleFill,
-  BIconPlayFill,
-  BIconStopFill,
-  BIconArrowCounterclockwise,
-  BIconGearFill,
-  BIconFlagFill,
-} from "bootstrap-vue";
-
 export default {
   name: "BadmintonCounter",
-  components: {
-    BIconPlusCircleFill,
-    BIconDashCircleFill,
-    BIconPlayFill,
-    BIconStopFill,
-    BIconArrowCounterclockwise,
-    BIconGearFill,
-    BIconFlagFill,
-  },
+  components: {},
   data() {
     return {
       team1Score: 0,
@@ -271,7 +270,6 @@ export default {
     };
   },
   computed: {
-    // Computed property to format the timeElapsed into MM:SS format
     formattedTime() {
       const minutes = Math.floor(this.timeElapsed / 60)
         .toString()
@@ -279,7 +277,6 @@ export default {
       const seconds = (this.timeElapsed % 60).toString().padStart(2, "0");
       return `${minutes}:${seconds}`;
     },
-    // Computed properties to display the score in two separate digits
     team1ScoreTens() {
       return Math.floor(this.team1Score / 10);
     },
@@ -294,7 +291,6 @@ export default {
     },
   },
   methods: {
-    // Method to increase the score for a given team
     incrementScore(team) {
       if (team === "team1") {
         this.team1Score++;
@@ -302,7 +298,6 @@ export default {
         this.team2Score++;
       }
     },
-    // Method to decrease the score, ensuring it doesn't go below 0
     decrementScore(team) {
       if (team === "team1" && this.team1Score > 0) {
         this.team1Score--;
@@ -310,7 +305,6 @@ export default {
         this.team2Score--;
       }
     },
-    // Method to start the timer
     startTimer() {
       if (!this.timerRunning) {
         this.timerRunning = true;
@@ -319,14 +313,12 @@ export default {
         }, 1000);
       }
     },
-    // Method to stop the timer
     stopTimer() {
       if (this.timerRunning) {
         this.timerRunning = false;
         clearInterval(this.timer);
       }
     },
-    // Method to reset scores and the timer
     resetAll() {
       this.stopTimer();
       this.timeElapsed = 0;
@@ -340,7 +332,6 @@ export default {
       this.modalSettingShow = false;
     },
   },
-  // Clean up the interval when the component is destroyed
   beforeDestroy() {
     clearInterval(this.timer);
   },
@@ -358,7 +349,7 @@ export default {
   background-color: #e9ecef;
   border: 1px solid #ced4da;
   border-radius: 0.5rem;
-  font-size: 15rem;
+  font-size: 20rem;
   font-weight: bold;
   width: 300px;
   height: 450px;
