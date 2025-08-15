@@ -50,7 +50,7 @@
         <b-button
           variant="success"
           class="font-weight-bold my-2 shadow-sm d-flex flex-row justify-content-center align-items-center rounded-lg"
-          @click="startListening"
+          :to="{ name: 'Match List' }"
         >
           <b-icon-list-check></b-icon-list-check>
           <span class="ps-2">All Match Results</span>
@@ -77,7 +77,7 @@
             striped
             hover
             responsive
-            :items="matches"
+            :items="recentMatches"
             :fields="fields"
             class="rounded-lg overflow-hidden bg-white"
           >
@@ -106,7 +106,7 @@ export default {
   name: 'LiveCounter',
   data() {
     return {
-      eventName: 'Yakin Hidup Sehat Cup 🏸🏆',
+      eventName: 'Yakin Hidup Sehat Cup 2025 🏸🏆',
       matchName: '',
       docId: 'l4b5zRxOghe1B5quXEF2',
       docData: null,
@@ -151,9 +151,9 @@ export default {
           label: "Duration",
           sortable: false,
           class: "text-center",
-        },
+        }
       ],
-      matches: [
+      recentMatches: [
         {
           no: 1,
           team1Player: 'Player 1 & Player 2',
@@ -208,6 +208,7 @@ export default {
       this.unsubscribe = docRef.onSnapshot(docSnapshot => {
         if (docSnapshot.exists) {
           this.runningMatchData = { id: docSnapshot.id, ...docSnapshot.data() };
+          this.matchName = this.runningMatchData.matchName
         } else {
           this.runningMatchData = {};
         }
@@ -254,7 +255,51 @@ export default {
       }
 
       return parts.join(' ');
+    },
+    toMillis(ts) {
+      if (!ts) return 0;
+      return ts.seconds * 1000 + Math.floor(ts.nanoseconds / 1e6);
+    },
+
+    sortByCreatedAtDesc(data) {
+      return data.sort((a, b) => this.toMillis(b.createdAt) - this.toMillis(a.createdAt));
+    },
+    async fetchCollections() {
+      try {
+        const collectionRef1 = db.collection('men-doubles-match');
+        const collectionRef2 = db.collection('mixed-doubles-match');
+        
+        const [snapshot1, snapshot2] = await Promise.all([
+          collectionRef1.get(),
+          collectionRef2.get()
+        ]);
+
+        const items = snapshot1.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const otherItems = snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const combined = [...items, ...otherItems]
+
+        const transformedMatches = combined.map(match => {
+          const { team1Score, team2Score, ...rest } = match
+          
+          return {
+            score: {
+              team1Score,
+              team2Score
+            },
+            ...rest
+          };
+        });
+
+        this.recentMatches = this.sortByCreatedAtDesc(transformedMatches)
+        this.loading = false;
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
     }
+  },
+  async mounted () {
+    await this.fetchCollections()
   },
   beforeDestroy() {
     if (this.unsubscribe) {
