@@ -5,7 +5,7 @@
         <b-card no-body class="shadow" header-tag="header">
           <template #header>
             <h1 class="font-weight-bold text-muted my-2">
-              {{ team1Player }}
+              {{ runningMatchData.team1Player }}
             </h1>
           </template>
 
@@ -162,7 +162,7 @@
         <b-card no-body class="shadow" header-tag="header">
           <template #header>
             <h1 class="font-weight-bold text-muted my-2">
-              {{ team2Player }}
+              {{ runningMatchData.team2Player }}
             </h1>
           </template>
           <b-card-body>
@@ -229,7 +229,7 @@
           <b-form-input
             id="input-team-1"
             placeholder="Player Name"
-            v-model="team1Player"
+            v-model="runningMatchData.team1Player"
           ></b-form-input>
         </b-col>
       </b-row>
@@ -241,7 +241,7 @@
           <b-form-input
             id="input-team-2"
             placeholder="Player Name"
-            v-model="team2Player"
+            v-model="runningMatchData.team2Player"
           ></b-form-input>
         </b-col>
       </b-row>
@@ -267,50 +267,74 @@ export default {
       modalSettingShow: false,
       team1Player: "Player 1 & Player 2",
       team2Player: "Player 3 & Player 4",
+      runningMatchData: {
+        team1Score: 0,
+        team2Score: 0,
+        timeElapsed: 0,
+        team1Player: "Player 1 & Player 2",
+        team2Player: "Player 3 & Player 4",
+        timestamp: ''
+      },
+      initialMatchData: {
+        team1Score: 0,
+        team2Score: 0,
+        timeElapsed: 0,
+        team1Player: "Player 1 & Player 2",
+        team2Player: "Player 3 & Player 4",
+        timestamp: ''
+      },
+      localStorageKey: 'matchData',
+      isInitialized: false
     };
   },
   computed: {
     formattedTime() {
-      const minutes = Math.floor(this.timeElapsed / 60)
+      const minutes = Math.floor(this.runningMatchData.timeElapsed / 60)
         .toString()
         .padStart(2, "0");
-      const seconds = (this.timeElapsed % 60).toString().padStart(2, "0");
+      const seconds = (this.runningMatchData.timeElapsed % 60).toString().padStart(2, "0");
       return `${minutes}:${seconds}`;
     },
     team1ScoreTens() {
-      return Math.floor(this.team1Score / 10);
+      return Math.floor(this.runningMatchData.team1Score / 10);
     },
     team1ScoreOnes() {
-      return this.team1Score % 10;
+      return this.runningMatchData.team1Score % 10;
     },
     team2ScoreTens() {
-      return Math.floor(this.team2Score / 10);
+      return Math.floor(this.runningMatchData.team2Score / 10);
     },
     team2ScoreOnes() {
-      return this.team2Score % 10;
+      return this.runningMatchData.team2Score % 10;
     },
+  },
+  mounted () {
+    this.initData()
   },
   methods: {
     incrementScore(team) {
       if (team === "team1") {
-        this.team1Score++;
+        this.runningMatchData.team1Score++;
       } else if (team === "team2") {
-        this.team2Score++;
+        this.runningMatchData.team2Score++;
       }
     },
     decrementScore(team) {
-      if (team === "team1" && this.team1Score > 0) {
-        this.team1Score--;
-      } else if (team === "team2" && this.team2Score > 0) {
-        this.team2Score--;
+      if (team === "team1" && this.runningMatchData.team1Score > 0) {
+        this.runningMatchData.team1Score--;
+      } else if (team === "team2" && this.runningMatchData.team2Score > 0) {
+        this.runningMatchData.team2Score--;
       }
     },
     startTimer() {
       if (!this.timerRunning) {
         this.timerRunning = true;
         this.timer = setInterval(() => {
-          this.timeElapsed++;
+          this.runningMatchData.timeElapsed++;
         }, 1000);
+        
+        this.isInitialized = true
+        this.saveToLocalStorage()
       }
     },
     stopTimer() {
@@ -321,9 +345,9 @@ export default {
     },
     resetAll() {
       this.stopTimer();
-      this.timeElapsed = 0;
-      this.team1Score = 0;
-      this.team2Score = 0;
+      this.runningMatchData = {...this.initialMatchData}
+      this.isInitialized = false
+      localStorage.removeItem(this.localStorageKey)
     },
     showSettingModal() {
       this.modalSettingShow = true;
@@ -331,10 +355,39 @@ export default {
     hideSettingModal() {
       this.modalSettingShow = false;
     },
+    saveToLocalStorage() {
+      this.runningMatchData.timestamp = new Date().toLocaleString()
+      localStorage.setItem(this.localStorageKey, JSON.stringify(this.runningMatchData));
+    },
+    initData() {
+      const storedItem = localStorage.getItem(this.localStorageKey);
+      
+      if (storedItem) {
+        try {
+          this.runningMatchData  = JSON.parse(storedItem)
+          this.startTimer()
+        } catch (e) {
+          console.error("Error parsing data from local storage:", e);
+          this.resetAll();
+        }
+      } else {
+        this.resetAll();
+      }
+    },
   },
   beforeDestroy() {
     clearInterval(this.timer);
   },
+  watch: {
+    runningMatchData: {
+      deep: true,
+      handler: function () {
+        if (this.isInitialized) {
+          this.saveToLocalStorage()
+        }
+      }
+    }
+  }
 };
 </script>
 
