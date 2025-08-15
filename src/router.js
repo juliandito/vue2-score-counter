@@ -10,7 +10,7 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
+    path: '/match-list',
     name: 'Match List',
     component: MatchList
   },
@@ -20,7 +20,7 @@ const routes = [
     component: BadmintonCounter
   },
   {
-    path: '/live',
+    path: '/',
     name: 'Live Counter',
     component: LiveCounter
   },

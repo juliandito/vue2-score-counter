@@ -1,79 +1,98 @@
 <template>
-  <b-container fluid class="bg-light vh-100">
-    <b-row class="justify-content-center align-items-center text-center h-100">
-      <b-col md="5">
-        <b-card no-body class="shadow" header-tag="header">
-          <template #header>
-            <h1 class="font-weight-bold text-muted my-2">
-              {{ runningMatchData.team1Player }}
-            </h1>
-          </template>
+  <!-- Main container, ensuring the app takes up the full viewport height -->
+  <b-container fluid class="bg-light vh-100 p-3 p-md-5 pt-5 live-page">
 
-          <b-card-body>
-            <b-row>
-              <b-col>
-                <div
-                  class="d-flex justify-content-center score-display-container my-3"
-                >
-                  <div class="score-digit mx-2">{{ team1ScoreTens }}</div>
-                  <div class="score-digit mx-2">{{ team1ScoreOnes }}</div>
-                </div>
-              </b-col>
-            </b-row>
+    <!-- New row for event and match names -->
+    <b-row class="justify-content-center text-center mb-4">
+      <b-col cols="12">
+        <h2 class="font-weight-bold text-secondary mb-1">{{ eventName }}</h2>
+        <h4 class="font-weight-normal text-muted mt-3">{{ matchName }}</h4>
+      </b-col>
+    </b-row>
+
+    <!-- Row for the two score cards, side-by-side on all screens -->
+    <b-row class="justify-content-center text-center flex-grow-1 mb-4">
+      <!-- Team 1 Score Card -->
+      <b-col cols="6" class="d-flex justify-content-center align-items-center p-1 p-md-2">
+        <b-card no-body class="shadow-sm w-100 rounded-lg" header-tag="header">
+          <template #header>
+            <h1 class="font-weight-bold text-muted my-2 h6 h5-md">{{ runningMatchData.team1Player }}</h1>
+          </template>
+          <b-card-body class="d-flex flex-column justify-content-center">
+            <div class="score-display-container my-2 my-md-3">
+              <div class="score-digit mx-1">{{ team1ScoreTens }}</div>
+              <div class="score-digit mx-1">{{ team1ScoreOnes }}</div>
+            </div>
           </b-card-body>
         </b-card>
       </b-col>
 
-      <b-col md="2">
-        <b-row class="mt-2">
-          <b-col>
-            <hr />
-          </b-col>
-        </b-row>
-        <b-row>
-          <b-col>
-            <div class="timer-display">{{ formattedTime }}</div>
-          </b-col>
-        </b-row>
-        <b-row class="mb-1">
-          <b-col>
-            <hr />
-          </b-col>
-        </b-row>
-        <b-row>
-          <b-col>
-            <b-button
-              variant="primary"
-              block
-              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
-              @click="startListening"
-            >
-              <b-icon-list-check></b-icon-list-check>
-              <span class="ps-2">Match Results</span>
-            </b-button>
-          </b-col>
-        </b-row>
-      </b-col>
-
-      <b-col md="5">
-        <b-card no-body class="shadow" header-tag="header">
+      <!-- Team 2 Score Card -->
+      <b-col cols="6" class="d-flex justify-content-center align-items-center p-1 p-md-2">
+        <b-card no-body class="shadow-sm w-100 rounded-lg" header-tag="header">
           <template #header>
-            <h1 class="font-weight-bold text-muted my-2">
-              {{ runningMatchData.team2Player }}
-            </h1>
+            <h1 class="font-weight-bold text-muted my-2 h6 h5-md">{{ runningMatchData.team2Player }}</h1>
           </template>
-          <b-card-body>
-            <b-row>
-              <b-col>
-                <div
-                  class="d-flex justify-content-center score-display-container my-3"
-                >
-                  <div class="score-digit mx-2">{{ team2ScoreTens }}</div>
-                  <div class="score-digit mx-2">{{ team2ScoreOnes }}</div>
-                </div>
-              </b-col>
-            </b-row>
+          <b-card-body class="d-flex flex-column justify-content-center">
+            <div class="score-display-container my-2 my-md-3">
+              <div class="score-digit mx-1">{{ team2ScoreTens }}</div>
+              <div class="score-digit mx-1">{{ team2ScoreOnes }}</div>
+            </div>
           </b-card-body>
+        </b-card>
+      </b-col>
+    </b-row>
+
+    <!-- Row for the timer and match results button, positioned below the score cards -->
+    <b-row class="justify-content-center text-center mb-4">
+      <b-col cols="12" md="6" lg="4" class="d-flex flex-column align-items-center">
+        <div class="timer-display my-2 shadow-sm rounded-lg">{{ formattedTime }}</div>
+        <b-button
+          variant="success"
+          class="font-weight-bold my-2 shadow-sm d-flex flex-row justify-content-center align-items-center rounded-lg"
+          @click="startListening"
+        >
+          <b-icon-list-check></b-icon-list-check>
+          <span class="ps-2">All Match Results</span>
+        </b-button>
+      </b-col>
+    </b-row>
+
+    <b-row class="mt-2">
+      <b-col>
+        <hr>
+      </b-col>
+    </b-row>
+
+    <b-row class="mt-2">
+      <b-col>
+        <b-card header-tag="header">
+          <template #header>
+            <h5 class="font-weight-bold text-muted my-2">
+              Recent Matches ⚡
+            </h5>
+          </template>
+
+          <b-table
+            striped
+            hover
+            responsive
+            :items="matches"
+            :fields="fields"
+            class="rounded-lg overflow-hidden bg-white"
+          >
+            <template #cell(score)="data">
+              <div>
+                {{ data.item.score.team1Score }} -
+                {{ data.item.score.team2Score }}
+              </div>
+            </template>
+            <template #cell(timeElapsed)="data">
+              <div>
+                {{ secondsToFormattedTime(data.item.timeElapsed) }}
+              </div>
+            </template>
+          </b-table>
         </b-card>
       </b-col>
     </b-row>
@@ -87,6 +106,8 @@ export default {
   name: 'LiveCounter',
   data() {
     return {
+      eventName: 'Yakin Hidup Sehat Cup 🏸🏆',
+      matchName: '',
       docId: 'l4b5zRxOghe1B5quXEF2',
       docData: null,
       loading: false,
@@ -115,7 +136,35 @@ export default {
       },
       localStorageKey: 'matchData',
       isInitialized: false,
-      currentMatchId: 'l4b5zRxOghe1B5quXEF2'
+      currentMatchId: 'l4b5zRxOghe1B5quXEF2',
+      fields: [
+        { key: "team1Player", label: "Team 1", sortable: false },
+        { key: "team2Player", label: "Team 2", sortable: false },
+        {
+          key: "score",
+          label: "Score",
+          sortable: false,
+          class: "text-center",
+        },
+        {
+          key: "timeElapsed",
+          label: "Duration",
+          sortable: false,
+          class: "text-center",
+        },
+      ],
+      matches: [
+        {
+          no: 1,
+          team1Player: 'Player 1 & Player 2',
+          team2Player: 'Player 3 & Player 4',
+          score: {
+            team1Score: 0,
+            team2Score: 0,
+          },
+          timeElapsed: 100,
+        },
+      ],
     };
   },
   computed: {
@@ -185,6 +234,27 @@ export default {
         clearInterval(this.timer);
       }
     },
+    secondsToFormattedTime(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      totalSeconds %= 3600;
+
+      const minutes = Math.floor(totalSeconds / 60);
+
+      const seconds = totalSeconds % 60;
+
+      const parts = [];
+      if (hours > 0) {
+        parts.push(`${hours}hr`);
+      }
+      if (minutes > 0) {
+        parts.push(`${minutes}m`);
+      }
+      if (seconds > 0 || parts.length === 0) {
+        parts.push(`${seconds}s`);
+      }
+
+      return parts.join(' ');
+    }
   },
   beforeDestroy() {
     if (this.unsubscribe) {
@@ -193,7 +263,20 @@ export default {
   }
 };
 </script>
+
 <style scoped>
+/* Scoped styles to apply only to this component */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
+
+body, .h1, .h2, .h3, .h4, .h5, .h6, .live-page {
+  font-family: 'Lato', sans-serif !important;
+}
+
+/* Scoped styles to apply only to this component */
+.vh-100 {
+  min-height: 100vh;
+}
+
 .score-display-container {
   display: flex;
   justify-content: center;
@@ -201,37 +284,61 @@ export default {
 }
 
 .score-digit {
-  background-color: #e9ecef;
-  border: 1px solid #ced4da;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
   border-radius: 0.5rem;
-  font-size: 20rem;
   font-weight: bold;
-  width: 300px;
-  height: 450px;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #343a40;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #4a5568;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  /* Responsive sizing for mobile first */
+  font-size: 15vw; /* Scales font size with viewport width */
+  width: 20vw;
+  height: 30vw;
+  transition: all 0.3s ease;
+
+  /* Media query for larger screens to cap the size */
+  @media (min-width: 992px) {
+    font-size: 10rem;
+    width: 130px;
+    height: 195px;
+  }
 }
 
 .timer-display {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  color: #495057;
+  color: #4a5568;
   background-color: #fff;
   padding: 10px 20px;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   min-width: 150px;
   text-align: center;
+  
+  /* Media query for larger screens */
+  @media (min-width: 992px) {
+    font-size: 2rem;
+  }
 }
 
-.vh-100 {
-  min-height: 100vh;
+/* Responsive font sizing for headers */
+.h6 { font-size: 1rem; }
+.h5-md { font-size: 1.25rem; }
+@media (min-width: 768px) {
+  .h5-md { font-size: 1.5rem; }
 }
 
-.font-weight-bold {
-  font-weight: 700 !important;
+.font-weight-light {
+    font-weight: 300 !important;
+}
+.font-weight-normal {
+    font-weight: 400 !important;
+}
+.rounded-lg {
+    border-radius: 0.75rem !important;
 }
 </style>
