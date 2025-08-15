@@ -148,20 +148,20 @@
           <b-col>
             <b-button
               @click="updateCurrentMatch"
-              variant="info"
+              variant="success"
               block
               class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
             >
-              <b-icon-flag-fill></b-icon-flag-fill>
+              <b-icon-arrow-repeat></b-icon-arrow-repeat>
               <span class="ps-2">Update Live</span>
             </b-button>
           </b-col>
         </b-row>
 
-        <b-row class="mt-4">
+        <b-row class="mt-3">
           <b-col>
             <b-button
-              @click="saveData"
+              @click="showFinishModal"
               variant="info"
               block
               class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
@@ -228,6 +228,8 @@
       </b-col>
     </b-row>
 
+
+
     <b-modal
       id="settingModal"
       title="Match Players"
@@ -248,6 +250,7 @@
           ></b-form-input>
         </b-col>
       </b-row>
+
       <b-row class="mt-4">
         <b-col sm="2" class="d-flex align-items-center">
           <label for="input-small">Team 2:</label>
@@ -261,10 +264,68 @@
         </b-col>
       </b-row>
 
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Round:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="match-name"
+            v-model="runningMatchData.matchName"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Passkey:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="passkey"
+            placeholder="Passkey"
+            v-model="passkey"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+
       <template #modal-footer>
         <b-button variant="secondary" @click="hideSettingModal">Close</b-button>
       </template>
     </b-modal>
+
+
+
+    <b-modal
+      id="finishModal"
+      title="Finish Game"
+      v-model="modalFinishShow"
+      no-close-on-backdrop
+      no-close-on-esc
+      hide-header-close
+    >
+      <b-row class="mt-4">
+        <b-col sm="4" class="d-flex align-items-center">
+          <label for="input-small">Match Category</label>
+        </b-col>
+        <b-col sm="8">
+          <b-form-select
+            class="w-100"
+            id="match-category"
+            v-model="selectedMatchType"
+            :options="matchTypeOption"
+          ></b-form-select>
+        </b-col>
+      </b-row>
+
+      <template #modal-footer>
+        <b-button variant="secondary" @click="hideFinishModal">Close</b-button>
+        <b-button variant="success" @click="saveData">Submit</b-button>
+      </template>
+    </b-modal>
+
+
+
   </b-container>
 </template>
 
@@ -285,6 +346,7 @@ export default {
       team1Player: "Player 1 & Player 2",
       team2Player: "Player 3 & Player 4",
       runningMatchData: {
+        matchName: '',
         team1Score: 0,
         team2Score: 0,
         timeElapsed: 0,
@@ -292,6 +354,7 @@ export default {
         team2Player: "Player 3 & Player 4",
       },
       initialMatchData: {
+        matchName: '',
         team1Score: 0,
         team2Score: 0,
         timeElapsed: 0,
@@ -300,7 +363,11 @@ export default {
       },
       localStorageKey: 'matchData',
       isInitialized: false,
-      currentMatchId: 'l4b5zRxOghe1B5quXEF2'
+      currentMatchId: 'l4b5zRxOghe1B5quXEF2',
+      modalFinishShow: false,
+      passkey: '',
+      selectedMatchType: '',
+      matchTypeOption: [ "Men's Doubles", "Mixed Doubles"],
     };
   },
   computed: {
@@ -328,19 +395,23 @@ export default {
     this.initData()
   },
   methods: {
-    incrementScore(team) {
+    async incrementScore(team) {
       if (team === "team1") {
         this.runningMatchData.team1Score++;
       } else if (team === "team2") {
         this.runningMatchData.team2Score++;
       }
+
+      await this.updateCurrentMatch()
     },
-    decrementScore(team) {
+    async decrementScore(team) {
       if (team === "team1" && this.runningMatchData.team1Score > 0) {
         this.runningMatchData.team1Score--;
       } else if (team === "team2" && this.runningMatchData.team2Score > 0) {
         this.runningMatchData.team2Score--;
       }
+
+      await this.updateCurrentMatch()
     },
     startTimer() {
       if (!this.timerRunning) {
@@ -363,13 +434,22 @@ export default {
       this.stopTimer();
       this.runningMatchData = {...this.initialMatchData}
       this.isInitialized = false
+      this.passkey = ''
+      this.selectedMatchType = ''
       localStorage.removeItem(this.localStorageKey)
     },
     showSettingModal() {
       this.modalSettingShow = true;
+      this.passkey = localStorage.getItem('passkey');
     },
     hideSettingModal() {
       this.modalSettingShow = false;
+    },
+    showFinishModal() {
+      this.modalFinishShow = true;
+    },
+    hideFinishModal() {
+      this.modalFinishShow = false;
     },
     saveToLocalStorage() {
       localStorage.setItem(this.localStorageKey, JSON.stringify(this.runningMatchData));
@@ -390,18 +470,44 @@ export default {
       }
     },
     async saveData() {
+      if (!this.isInitialized) {
+        return
+      }
+
+      const guard = await this.guardCall()
+      if (!guard) {
+        return
+      }
+
       try {
-        const docRef = await db.collection('men-doubles-match').add({
+        let collName
+        if (this.selectedMatchType === "Men's Doubles") {
+          collName = 'men-doubles-match'
+        } else {
+          collName = 'mixed-doubles-match'
+        }
+
+        await db.collection(collName).add({
           ...this.runningMatchData,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        console.log("Document written with ID: ", docRef.id);
+        this.hideFinishModal()
+        this.resetAll()
       } catch (e) {
         console.error("Error adding document: ", e);
       } 
     },
     async updateCurrentMatch() {
+      if (!this.isInitialized) {
+        return
+      }
+
+      const guard = await this.guardCall()
+      if (!guard) {
+        return
+      }
+
       const docRef = db.collection('active-match').doc(this.currentMatchId);
       await docRef.update({
         ...this.runningMatchData,
@@ -409,6 +515,28 @@ export default {
       });
       
       console.log("Document updated");
+    },
+    async guardCall() {
+      const key = localStorage.getItem('passkey');
+
+      if (key === '') {
+        return false
+      }
+
+      try {
+        const docRef = db.collection(key).doc('CsipNVwzNCtEXLRtmowd');
+        const doc = await docRef.get();
+
+        if (doc.exists) {
+          return true
+        } else {
+          console.log('Wrong passkey')
+          return false
+        }
+      } catch (error) {
+        console.error("Error fetching single document:", error);
+        return false
+      }
     }
   },
   beforeDestroy() {
@@ -422,6 +550,9 @@ export default {
           this.saveToLocalStorage()
         }
       }
+    },
+    passkey (value) {
+      localStorage.setItem('passkey', value);
     }
   }
 };
