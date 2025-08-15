@@ -147,6 +147,21 @@
         <b-row class="mt-4">
           <b-col>
             <b-button
+              @click="updateCurrentMatch"
+              variant="info"
+              block
+              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
+            >
+              <b-icon-flag-fill></b-icon-flag-fill>
+              <span class="ps-2">Update Live</span>
+            </b-button>
+          </b-col>
+        </b-row>
+
+        <b-row class="mt-4">
+          <b-col>
+            <b-button
+              @click="saveData"
               variant="info"
               block
               class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
@@ -254,6 +269,8 @@
 </template>
 
 <script>
+import { db, firebase } from '../firebase';
+
 export default {
   name: "BadmintonCounter",
   components: {},
@@ -273,7 +290,6 @@ export default {
         timeElapsed: 0,
         team1Player: "Player 1 & Player 2",
         team2Player: "Player 3 & Player 4",
-        timestamp: ''
       },
       initialMatchData: {
         team1Score: 0,
@@ -281,7 +297,6 @@ export default {
         timeElapsed: 0,
         team1Player: "Player 1 & Player 2",
         team2Player: "Player 3 & Player 4",
-        timestamp: ''
       },
       localStorageKey: 'matchData',
       isInitialized: false
@@ -356,7 +371,6 @@ export default {
       this.modalSettingShow = false;
     },
     saveToLocalStorage() {
-      this.runningMatchData.timestamp = new Date().toLocaleString()
       localStorage.setItem(this.localStorageKey, JSON.stringify(this.runningMatchData));
     },
     initData() {
@@ -374,6 +388,27 @@ export default {
         this.resetAll();
       }
     },
+    async saveData() {
+      try {
+        const docRef = await db.collection('men-doubles-match').add({
+          ...this.runningMatchData,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        console.log("Document written with ID: ", docRef.id);
+      } catch (e) {
+        console.error("Error adding document: ", e);
+      } 
+    },
+    async updateCurrentMatch() {
+      const docRef = db.collection('active-match').doc('l4b5zRxOghe1B5quXEF2');
+      await docRef.update({
+        ...this.runningMatchData,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      console.log("Document updated");
+    }
   },
   beforeDestroy() {
     clearInterval(this.timer);
