@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 
 import BadmintonCounter from '@/views/BadmintonCounter.vue'
 import MatchList from '@/views/MatchList.vue'
+import LiveCounter from '@/views/LiveCounter.vue'
 
 Vue.use(VueRouter)
 
@@ -17,6 +18,11 @@ const routes = [
     path: '/counter',
     name: 'Counter',
     component: BadmintonCounter
+  },
+  {
+    path: '/live',
+    name: 'Live Counter',
+    component: LiveCounter
   },
 ]
 

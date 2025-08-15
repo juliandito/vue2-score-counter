@@ -299,7 +299,8 @@ export default {
         team2Player: "Player 3 & Player 4",
       },
       localStorageKey: 'matchData',
-      isInitialized: false
+      isInitialized: false,
+      currentMatchId: 'l4b5zRxOghe1B5quXEF2'
     };
   },
   computed: {
@@ -401,7 +402,7 @@ export default {
       } 
     },
     async updateCurrentMatch() {
-      const docRef = db.collection('active-match').doc('l4b5zRxOghe1B5quXEF2');
+      const docRef = db.collection('active-match').doc(this.currentMatchId);
       await docRef.update({
         ...this.runningMatchData,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
