@@ -1,17 +1,14 @@
 <template>
   <div id="app">
-    <BadmintonCounter />
+    <router-view/>
   </div>
 </template>
 
 <script>
-import BadmintonCounter from './views/BadmintonCounter.vue'
 
 export default {
   name: 'App',
-  components: {
-    BadmintonCounter
-  }
+  components: {}
 }
 </script>
 
