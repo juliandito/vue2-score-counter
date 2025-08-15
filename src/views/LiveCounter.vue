@@ -209,6 +209,7 @@ export default {
         if (docSnapshot.exists) {
           this.runningMatchData = { id: docSnapshot.id, ...docSnapshot.data() };
           this.matchName = this.runningMatchData.matchName
+          this.startTimer()
         } else {
           this.runningMatchData = {};
         }
@@ -224,9 +225,6 @@ export default {
         this.timer = setInterval(() => {
           this.runningMatchData.timeElapsed++;
         }, 1000);
-        
-        this.isInitialized = true
-        this.saveToLocalStorage()
       }
     },
     stopTimer() {
@@ -300,6 +298,7 @@ export default {
   },
   async mounted () {
     await this.fetchCollections()
+    this.startListening()
   },
   beforeDestroy() {
     if (this.unsubscribe) {

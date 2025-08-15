@@ -171,6 +171,18 @@
             </b-button>
           </b-col>
         </b-row>
+        <b-row class="mt-3">
+          <b-col>
+            <b-button
+              @click="showWinnerModal"
+              variant="light"
+              block
+              class="font-weight-bold w-100 shadow-sm d-flex flex-row justify-content-center align-items-center"
+            >
+              <span class="ps-2">Admin</span>
+            </b-button>
+          </b-col>
+        </b-row>
       </b-col>
 
       <b-col md="5">
@@ -325,6 +337,91 @@
     </b-modal>
 
 
+    <b-modal
+      id="winnerModal"
+      title="Winners"
+      v-model="modalWinnerShow"
+      no-close-on-backdrop
+      no-close-on-esc
+      hide-header-close
+    >
+      <h5>Men's Doubles</h5>
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">First:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="men-winner-1"
+            v-model="menWinner.first"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Second:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="men-winner-2"
+            v-model="menWinner.second"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Third:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="men-winner-3"
+            v-model="menWinner.third"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+
+      <h5 class="mt-4">Mixed Doubles</h5>
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">First:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="mixed-winner-1"
+            v-model="mixedWinner.first"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Second:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="mixed-winner-2"
+            v-model="mixedWinner.second"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row class="mt-4">
+        <b-col sm="2" class="d-flex align-items-center">
+          <label for="input-small">Third:</label>
+        </b-col>
+        <b-col sm="10">
+          <b-form-input
+            id="mixed-winner-3"
+            v-model="mixedWinner.third"
+          ></b-form-input>
+        </b-col>
+      </b-row>
+
+      <template #modal-footer>
+        <b-button variant="secondary" @click="hideWinnerModal">Close</b-button>
+        <b-button variant="success" @click="updateWinner">Submit</b-button>
+      </template>
+    </b-modal>
+
+
 
   </b-container>
 </template>
@@ -337,6 +434,17 @@ export default {
   components: {},
   data() {
     return {
+      modalWinnerShow: false,
+      menWinner: {
+        first: '',
+        second: '',
+        third: ''
+      },
+      mixedWinner: {
+        first: '',
+        second: '',
+        third: ''
+      },
       team1Score: 0,
       team2Score: 0,
       timer: null,
@@ -451,6 +559,12 @@ export default {
     hideFinishModal() {
       this.modalFinishShow = false;
     },
+    showWinnerModal() {
+      this.modalWinnerShow = true;
+    },
+    hideWinnerModal() {
+      this.modalWinnerShow = false;
+    },
     saveToLocalStorage() {
       localStorage.setItem(this.localStorageKey, JSON.stringify(this.runningMatchData));
     },
@@ -516,6 +630,57 @@ export default {
       
       console.log("Document updated");
     },
+    async updateWinner() {
+      const guard = await this.guardCall()
+      if (!guard) {
+        return
+      }
+
+      const menPayload = [
+        {
+          no: '1st',
+          team: this.menWinner.first
+        },
+        {
+          no: '2nd',
+          team: this.menWinner.second
+        },
+        {
+          no: '3rd',
+          team: this.menWinner.third
+        }
+      ] 
+      const docRef = db.collection('match-winner').doc('men-doubles');
+      await docRef.update({
+        winners: menPayload,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+
+      const mixedPayload = [
+        {
+          no: '1st',
+          team: this.mixedWinner.first
+        },
+        {
+          no: '2nd',
+          team: this.mixedWinner.second
+        },
+        {
+          no: '3rd',
+          team: this.mixedWinner.third
+        }
+      ] 
+      const docRefMixed = db.collection('match-winner').doc('mixed-doubles');
+      await docRefMixed.update({
+        winners: mixedPayload,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      this.hideWinnerModal()
+      this.resetAll()
+    },
+
     async guardCall() {
       const key = localStorage.getItem('passkey');
 
@@ -530,7 +695,6 @@ export default {
         if (doc.exists) {
           return true
         } else {
-          console.log('Wrong passkey')
           return false
         }
       } catch (error) {

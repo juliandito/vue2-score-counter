@@ -2,7 +2,11 @@
   <div class="m-5">
     <b-row>
       <b-col class="d-flex justify-content-start">
-        <b-button variant="primary" class="px-4 d-flex flex-row justify-content-center align-items-center">
+        <b-button
+          variant="primary"
+          class="px-4 d-flex flex-row justify-content-center align-items-center"
+          :to="{ name: 'Live Counter' }"
+        >
           <b-icon-play-btn-fill></b-icon-play-btn-fill> <span class="ps-2">Live</span>
         </b-button>
       </b-col>
@@ -19,53 +23,37 @@
             striped
             hover
             responsive
-            :items="matchesWinner"
+            :items="menWinner"
             :fields="fieldsWinner"
             class="rounded-lg overflow-hidden bg-white"
           >
           </b-table>
         </b-card>
 
-        <b-card header-tag="header" class="mt-5">
+        <b-card header-tag="header" class="mt-5 mb-5">
           <template #header>
             <h5 class="font-weight-bold text-muted my-2">
               Men's Doubles All Matches
             </h5>
           </template>
           <b-table
+            id="men"
             striped
             hover
             responsive
-            :items="matches"
+            :items="menMatches"
             :fields="fields"
             class="rounded-lg overflow-hidden bg-white"
           >
-            <template #cell(team1)="data">
-              <div>
-                <div class="font-semibold">{{ data.item.team1.player1 }}</div>
-                <div class="text-sm text-gray-500">
-                  {{ data.item.team1.player2 }}
-                </div>
-              </div>
-            </template>
-
-            <template #cell(team2)="data">
-              <div>
-                <div class="font-semibold">{{ data.item.team2.player1 }}</div>
-                <div class="text-sm text-gray-500">
-                  {{ data.item.team2.player2 }}
-                </div>
-              </div>
-            </template>
-
             <template #cell(score)="data">
-              <div
-                :class="{
-                  'font-bold text-green-600': data.item.winner === 'Team 1',
-                }"
-              >
-                {{ data.item.score.team1_sets }} -
-                {{ data.item.score.team2_sets }}
+              <div>
+                {{ data.item.score.team1Score }} -
+                {{ data.item.score.team2Score }}
+              </div>
+            </template>
+            <template #cell(timeElapsed)="data">
+              <div>
+                {{ secondsToFormattedTime(data.item.timeElapsed) }}
               </div>
             </template>
           </b-table>
@@ -83,7 +71,7 @@
             striped
             hover
             responsive
-            :items="matchesWinner"
+            :items="mixedWinner"
             :fields="fieldsWinner"
             class="rounded-lg overflow-hidden bg-white"
           >
@@ -98,39 +86,23 @@
           </template>
 
           <b-table
+            id="mixed"
             striped
             hover
             responsive
-            :items="matches"
+            :items="mixedMatches"
             :fields="fields"
             class="rounded-lg overflow-hidden bg-white"
           >
-            <template #cell(team1)="data">
-              <div>
-                <div class="font-semibold">{{ data.item.team1.player1 }}</div>
-                <div class="text-sm text-gray-500">
-                  {{ data.item.team1.player2 }}
-                </div>
-              </div>
-            </template>
-
-            <template #cell(team2)="data">
-              <div>
-                <div class="font-semibold">{{ data.item.team2.player1 }}</div>
-                <div class="text-sm text-gray-500">
-                  {{ data.item.team2.player2 }}
-                </div>
-              </div>
-            </template>
-
             <template #cell(score)="data">
-              <div
-                :class="{
-                  'font-bold text-green-600': data.item.winner === 'Team 1',
-                }"
-              >
-                {{ data.item.score.team1_sets }} -
-                {{ data.item.score.team2_sets }}
+              <div>
+                {{ data.item.score.team1Score }} -
+                {{ data.item.score.team2Score }}
+              </div>
+            </template>
+            <template #cell(timeElapsed)="data">
+              <div>
+                {{ secondsToFormattedTime(data.item.timeElapsed) }}
               </div>
             </template>
           </b-table>
@@ -141,6 +113,8 @@
 </template>
 
 <script>
+import { db } from '../firebase';
+
 export default {
   name: "MatchList",
   components: {
@@ -151,15 +125,19 @@ export default {
         { key: "no", label: "#", sortable: false, class: "text-center" },
         { key: "team", label: "Team", sortable: false },
       ],
-      matchesWinner: [
+      menWinner: [
+        { no: "1st", team: "TBD" },
+        { no: "2nd", team: "TBD" },
+        { no: "3rd", team: "TBD" },
+      ],
+      mixedWinner: [
         { no: "1st", team: "TBD" },
         { no: "2nd", team: "TBD" },
         { no: "3rd", team: "TBD" },
       ],
       fields: [
-        { key: "no", label: "#", sortable: false, class: "text-center" },
-        { key: "team1", label: "Team 1", sortable: false },
-        { key: "team2", label: "Team 2", sortable: false },
+        { key: "team1Player", label: "Team 1", sortable: false },
+        { key: "team2Player", label: "Team 2", sortable: false },
         {
           key: "score",
           label: "Score",
@@ -167,51 +145,112 @@ export default {
           class: "text-center",
         },
         {
-          key: "duration",
+          key: "timeElapsed",
           label: "Duration",
           sortable: false,
           class: "text-center",
-        },
+        }
       ],
-      matches: [
+      menMatches: [
         {
           no: 1,
-          team1: { player1: "Marcus Gideon", player2: "Kevin Sukamuljo" },
-          team2: { player1: "Lee Yong Dae", player2: "Yoo Yeon Seong" },
+          team1Player: 'Men 1 & Men 2',
+          team2Player: 'Men 3 & Men 4',
           score: {
-            team1_sets: 2,
-            team2_sets: 1,
-            set_scores: ["21-17", "18-21", "21-19"],
+            team1Score: 0,
+            team2Score: 0,
           },
-          duration: "1h 25m",
-          winner: "Team 1",
+          timeElapsed: 100,
         },
+      ],
+      mixedMatches: [
         {
-          no: 2,
-          team1: { player1: "Hendra Setiawan", player2: "Mohammad Ahsan" },
-          team2: { player1: "Takuro Hoki", player2: "Yugo Kobayashi" },
+          no: 1,
+          team1Player: 'Player 1 & Player 2',
+          team2Player: 'Player 3 & Player 4',
           score: {
-            team1_sets: 1,
-            team2_sets: 2,
-            set_scores: ["15-21", "21-19", "17-21"],
+            team1Score: 0,
+            team2Score: 0,
           },
-          duration: "1h 10m",
-          winner: "Team 2",
-        },
-        {
-          no: 3,
-          team1: { player1: "Wang Chi-Lin", player2: "Lee Yang" },
-          team2: { player1: "Li Junhui", player2: "Liu Yuchen" },
-          score: {
-            team1_sets: 2,
-            team2_sets: 0,
-            set_scores: ["21-18", "21-12"],
-          },
-          duration: "55m",
-          winner: "Team 1",
+          timeElapsed: 100,
         },
       ],
     };
+  },
+  methods: {
+    secondsToFormattedTime(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      totalSeconds %= 3600;
+
+      const minutes = Math.floor(totalSeconds / 60);
+
+      const seconds = totalSeconds % 60;
+
+      const parts = [];
+      if (hours > 0) {
+        parts.push(`${hours}hr`);
+      }
+      if (minutes > 0) {
+        parts.push(`${minutes}m`);
+      }
+      if (seconds > 0 || parts.length === 0) {
+        parts.push(`${seconds}s`);
+      }
+
+      return parts.join(' ');
+    },
+    async fetchCollections() {
+      try {
+        const collectionRef1 = db.collection('men-doubles-match');
+        const collectionRef2 = db.collection('mixed-doubles-match');
+        const collectionRef3 = db.collection('match-winner');
+        
+        const [snapshot1, snapshot2, snapshot3] = await Promise.all([
+          collectionRef1.get(),
+          collectionRef2.get(),
+          collectionRef3.get()
+        ]);
+
+        const menDoubes = snapshot1.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const mixedDoubles = snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const winner = snapshot3.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const transformedMenDoubes = menDoubes.map(match => {
+          const { team1Score, team2Score, ...rest } = match
+          
+          return {
+            score: {
+              team1Score,
+              team2Score
+            },
+            ...rest
+          };
+        });
+        const transformedMixedDoubles = mixedDoubles.map(match => {
+          const { team1Score, team2Score, ...rest } = match
+          
+          return {
+            score: {
+              team1Score,
+              team2Score
+            },
+            ...rest
+          };
+        });
+
+        this.menMatches = transformedMenDoubes
+        this.mixedMatches = transformedMixedDoubles
+
+        this.menWinner = winner[0]['winners']
+        this.mixedWinner = winner[1]['winners']
+        this.loading = false;
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
+    }
+  },
+  async mounted () {
+    await this.fetchCollections()
   },
 };
 </script>
